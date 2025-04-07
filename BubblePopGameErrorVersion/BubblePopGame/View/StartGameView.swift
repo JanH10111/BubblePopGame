@@ -9,60 +9,67 @@ import SwiftUI
 
 struct StartGameView: View {
     
-
     @StateObject private var viewModel: StartGameViewModel
         
-        // Initialize with the game parameters
+        // Initialize with the parameters
         init(timerValue: Double, numberOfBubbles: Double) {
             _viewModel = StateObject(wrappedValue: StartGameViewModel(timerValue: timerValue, numberOfBubbles: numberOfBubbles))
         }
     
     var body: some View {
-        VStack {
-            HStack {
+ 
+            ZStack{
                 VStack {
-                    Text("Time Left:")
-                        .font(.headline)
-                    Text("\(viewModel.countdownInSeconds)")
-                        .font(.largeTitle)
-                        .bold()
-                        .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect(), perform: { _ in
-                            viewModel.onCountDown()
-                            viewModel.generateBubbles()
-                        })
-                }
-                
-                Spacer()
-                
-                VStack {
-                    Text("Score:")
-                        .font(.headline)
-                    Text(String(viewModel.score))
-                        .font(.largeTitle)
-                        .bold()
-                }
-            }
-            .padding([.top, .leading, .trailing], 30.0)
-            Divider()
-            GeometryReader { geo in
-                ZStack {
-                    ForEach(viewModel.bubbles) { bubble in
-                        Bubble(score: $viewModel.score, position: bubble.position, id: bubble.id, removeBubble: viewModel.removeBubble)
+                    HStack {
+                        VStack {
+                            Text("Time Left:")
+                                .font(.headline)
+                            Text("\(viewModel.countdownInSeconds)")
+                                .font(.largeTitle)
+                                .bold()
+                                .onAppear{ viewModel.startTimer()
+                                }
+                                }
+                        
+                        Spacer()
+                        
+                        VStack {
+                            Text("Score:")
+                                .font(.headline)
+                            Text(String(viewModel.score))
+                                .font(.largeTitle)
+                                .bold()
+                        }
+                    }
+                    .padding([.top, .leading, .trailing], 30.0)
+                    Divider()
+                    GeometryReader { geo in
+                        ZStack {
+                            ForEach(viewModel.bubbles) { bubble in
+                                Bubble(score: $viewModel.score, position: bubble.position, id: bubble.id, removeBubble: viewModel.removeBubble)
+                            }
+                        }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.gray.opacity(0.2))
+                    .cornerRadius(10)
+                    .onAppear {
+                        viewModel.gameAreaSize = geo.size
+                    }
                     }
                 }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color.gray.opacity(0.2))
-            .cornerRadius(10)
-            .onAppear {
-                viewModel.gameAreaSize = geo.size
-            }
+                
+                NavigationLink(
+                    destination: HighScoreView(score: viewModel.score),
+                    isActive: $viewModel.navigateToHighScore
+                ) {
+                    EmptyView()
+                }
             }
         }
-    }
     
 
     
-    
+    // View for the bubbles
     struct Bubble: View {
         @State private var value: Int = 0
         @State private var scale: CGFloat = 1.0
@@ -134,6 +141,6 @@ struct StartGameView: View {
     
 }
 #Preview {
-    StartGameView(timerValue: 50, numberOfBubbles: 15)
+    StartGameView(timerValue: 10, numberOfBubbles: 15)
 }
 

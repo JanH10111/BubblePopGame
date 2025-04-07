@@ -14,11 +14,14 @@ class StartGameViewModel: ObservableObject {
     @Published  var score: Int = 0
     @Published  var bubbles: [BubbleData] = []
     @Published  var gameAreaSize: CGSize = .zero
+    @Published  var bubbleRadius = UIScreen.main.bounds.width / 12
+    @Published var isCountingDown = false
+    @Published var navigateToHighScore = false
     
-    private var isCountingDown = false
     private var countdownInput = ""
     private var timerValue : Double
     private var numberOfBubbles: Double
+    private var timer: Timer?
     
     
     
@@ -28,12 +31,28 @@ class StartGameViewModel: ObservableObject {
             self.countdownInSeconds = Int(timerValue)
         }
     
+    func startTimer() {
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+            DispatchQueue.main.async {
+                self.onCountDown()
+                self.generateBubbles()
+            }
+        }
+    }
+    
+    func stopTimer() {
+        timer?.invalidate()
+        timer = nil
+    }
+    
     // onCountDown(): Decrements the countdown timer by one second. If the timer reaches zero, it stops counting down.
     func onCountDown() {
         if countdownInSeconds > 0 {
             countdownInSeconds -= 1
         } else {
             isCountingDown = false
+            navigateToHighScore = true
+            stopTimer()
         }
     }
     
@@ -44,7 +63,6 @@ class StartGameViewModel: ObservableObject {
     
     func generateBubbles() {
         let screenSize = gameAreaSize
-        let bubbleRadius = UIScreen.main.bounds.width / 12
         let maxBubbles = Int(numberOfBubbles)
         
         // Decide how many bubbles we want on screen this second

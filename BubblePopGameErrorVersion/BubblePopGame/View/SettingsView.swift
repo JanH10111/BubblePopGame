@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @StateObject var highScoreViewModel = HighScoreViewModel()
+    @ObservedObject var highScoreViewModel = HighScoreViewModel()
     @State private var countdownInput = ""
     @State private var countdownValue: Double = 60
     @State private var numberOfBubbles: Double = 15
@@ -20,7 +20,7 @@ struct SettingsView: View {
             Spacer()
             Text("Enter Your Name:")
             
-            TextField("Enter Name", text: $highScoreViewModel.taskDescription)
+            TextField("Enter Name", text: $highScoreViewModel.playerName)
                 .padding()
             Spacer()
             Text("Game Time")
