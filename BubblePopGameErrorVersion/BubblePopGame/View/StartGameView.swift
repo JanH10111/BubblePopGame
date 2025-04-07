@@ -16,6 +16,8 @@ struct StartGameView: View {
     @State private var countdownInput = ""
     @State private var score = 0
     @State private var bubbles: [BubbleData] = []
+    @State private var gameAreaSize: CGSize = .zero
+
     
     var body: some View {
         VStack {
@@ -29,10 +31,10 @@ struct StartGameView: View {
                         .onAppear {
                             countdownInSeconds = Int(timerValue)
                             isCountingDown = true
-                            startBubbleGeneration()
                         }
                         .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect(), perform: { _ in
                                 onCountDown()
+                                generateBubbles()
                         })
                 }
                 
@@ -48,17 +50,20 @@ struct StartGameView: View {
             }
             .padding([.top, .leading, .trailing], 30.0)
             Divider()
-            
-            ZStack {
-                ForEach(bubbles) { bubble in
-                    Bubble(score: $score, position: bubble.position, id: bubble.id, removeBubble: removeBubble)
+            GeometryReader { geo in
+                ZStack {
+                    ForEach(bubbles) { bubble in
+                        Bubble(score: $score, position: bubble.position, id: bubble.id, removeBubble: removeBubble)
+                    }
                 }
-            }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.gray.opacity(0.2))
             .cornerRadius(10)
+            .onAppear {
+                gameAreaSize = geo.size
+            }
+            }
         }
-        .ignoresSafeArea()
     }
     
     struct BubbleData: Identifiable {
@@ -67,45 +72,59 @@ struct StartGameView: View {
     }
     
     //
-    func startBubbleGeneration() {
-        Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { timer in
-            let targetBubbleCount = Int.random(in: 0...Int(numberOfBubbles))
-            var currentCount = bubbles.count
-            
-            //Random number of bubbles to remove
-            if currentCount > 0 {
-                let bubblesToRemove = Int.random(in: 0...currentCount)
-                currentCount -= bubblesToRemove
-                for _ in 0 ..< bubblesToRemove {
-                    if let randomBubble = bubbles.randomElement() {
-                        removeBubble(id: randomBubble.id)
+    
+    func generateBubbles() {
+        let screenSize = gameAreaSize
+        let bubbleRadius = UIScreen.main.bounds.width / 12
+        let maxBubbles = Int(numberOfBubbles)
+        
+        // Decide how many bubbles we want on screen this second
+        let desiredBubbleCount = Int.random(in: 1...maxBubbles)
+        
+        // Randomly remove a few bubbles (e.g., up to half)
+        let bubblesToRemove = Int.random(in: 0...(bubbles.count/2))
+        for _ in 0..<bubblesToRemove {
+            if let randomBubble = bubbles.randomElement() {
+                removeBubble(id: randomBubble.id)
+            }
+        }
+        
+        // Calculate how many new bubbles we need
+        let currentCount = bubbles.count
+        let bubblesNeeded = max(0, desiredBubbleCount - currentCount)
+        
+        var newBubbles: [BubbleData] = []
+        
+ 
+            for _ in 0..<bubblesNeeded {
+                var newPosition: CGPoint?
+
+                while true {
+                    let x = CGFloat.random(in: bubbleRadius...(screenSize.width - bubbleRadius))
+                    let y = CGFloat.random(in: bubbleRadius...(screenSize.height - bubbleRadius))
+                    let candidate = CGPoint(x: x, y: y)
+
+                    let hasOverlap = (bubbles + newBubbles).contains { existing in
+                        let dx = existing.position.x - candidate.x
+                        let dy = existing.position.y - candidate.y
+                        let distance = sqrt(dx * dx + dy * dy)
+                        return distance < bubbleRadius * 2
+                    }
+
+                    if !hasOverlap {
+                        newPosition = candidate
+                        break
                     }
                 }
+
+                if let position = newPosition {
+                    newBubbles.append(BubbleData(id: UUID(), position: position))
+                }
             }
-            // Wait briefly to let removal happen before checking final count
-            let bubblesToAdd = targetBubbleCount - currentCount
-            for _ in 0..<bubblesToAdd {
-                addBubble()
-            }
         
-        }
+        bubbles.append(contentsOf: newBubbles)
     }
-    func addBubble() {
-        let diameter = UIScreen.main.bounds.width / 6
-        let screenWidth = UIScreen.main.bounds.width
-        let screenHeight = UIScreen.main.bounds.height * 0.6  // Limit placement area
-        
-        let randomPosition = CGPoint(
-            x: CGFloat.random(in: diameter...(screenWidth - diameter)),
-            y: CGFloat.random(in: diameter...(screenHeight - diameter))
-        )
-        
-        let newBubble = BubbleData(id: UUID(), position: randomPosition)
-        
-        // Add bubble to the array
-        bubbles.append(newBubble)
-        
-    }
+    
     
     func removeBubble(id: UUID) {
         bubbles.removeAll { $0.id == id }
