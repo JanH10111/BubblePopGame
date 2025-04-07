@@ -9,15 +9,13 @@ import SwiftUI
 
 struct StartGameView: View {
     
-    var timerValue : Double
-    var numberOfBubbles: Double
-    @State private var countdownInSeconds = 0
-    @State private var isCountingDown = false
-    @State private var countdownInput = ""
-    @State private var score = 0
-    @State private var bubbles: [BubbleData] = []
-    @State private var gameAreaSize: CGSize = .zero
 
+    @StateObject private var viewModel: StartGameViewModel
+        
+        // Initialize with the game parameters
+        init(timerValue: Double, numberOfBubbles: Double) {
+            _viewModel = StateObject(wrappedValue: StartGameViewModel(timerValue: timerValue, numberOfBubbles: numberOfBubbles))
+        }
     
     var body: some View {
         VStack {
@@ -25,16 +23,12 @@ struct StartGameView: View {
                 VStack {
                     Text("Time Left:")
                         .font(.headline)
-                    Text("\(countdownInSeconds)")
+                    Text("\(viewModel.countdownInSeconds)")
                         .font(.largeTitle)
                         .bold()
-                        .onAppear {
-                            countdownInSeconds = Int(timerValue)
-                            isCountingDown = true
-                        }
                         .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect(), perform: { _ in
-                                onCountDown()
-                                generateBubbles()
+                            viewModel.onCountDown()
+                            viewModel.generateBubbles()
                         })
                 }
                 
@@ -43,7 +37,7 @@ struct StartGameView: View {
                 VStack {
                     Text("Score:")
                         .font(.headline)
-                    Text(String(score))
+                    Text(String(viewModel.score))
                         .font(.largeTitle)
                         .bold()
                 }
@@ -52,92 +46,22 @@ struct StartGameView: View {
             Divider()
             GeometryReader { geo in
                 ZStack {
-                    ForEach(bubbles) { bubble in
-                        Bubble(score: $score, position: bubble.position, id: bubble.id, removeBubble: removeBubble)
+                    ForEach(viewModel.bubbles) { bubble in
+                        Bubble(score: $viewModel.score, position: bubble.position, id: bubble.id, removeBubble: viewModel.removeBubble)
                     }
                 }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.gray.opacity(0.2))
             .cornerRadius(10)
             .onAppear {
-                gameAreaSize = geo.size
+                viewModel.gameAreaSize = geo.size
             }
             }
         }
     }
     
-    struct BubbleData: Identifiable {
-        let id: UUID
-        let position: CGPoint
-    }
-    
-    //
-    
-    func generateBubbles() {
-        let screenSize = gameAreaSize
-        let bubbleRadius = UIScreen.main.bounds.width / 12
-        let maxBubbles = Int(numberOfBubbles)
-        
-        // Decide how many bubbles we want on screen this second
-        let desiredBubbleCount = Int.random(in: 1...maxBubbles)
-        
-        // Randomly remove a few bubbles (e.g., up to half)
-        let bubblesToRemove = Int.random(in: 0...(bubbles.count/2))
-        for _ in 0..<bubblesToRemove {
-            if let randomBubble = bubbles.randomElement() {
-                removeBubble(id: randomBubble.id)
-            }
-        }
-        
-        // Calculate how many new bubbles we need
-        let currentCount = bubbles.count
-        let bubblesNeeded = max(0, desiredBubbleCount - currentCount)
-        
-        var newBubbles: [BubbleData] = []
-        
- 
-            for _ in 0..<bubblesNeeded {
-                var newPosition: CGPoint?
 
-                while true {
-                    let x = CGFloat.random(in: bubbleRadius...(screenSize.width - bubbleRadius))
-                    let y = CGFloat.random(in: bubbleRadius...(screenSize.height - bubbleRadius))
-                    let candidate = CGPoint(x: x, y: y)
-
-                    let hasOverlap = (bubbles + newBubbles).contains { existing in
-                        let dx = existing.position.x - candidate.x
-                        let dy = existing.position.y - candidate.y
-                        let distance = sqrt(dx * dx + dy * dy)
-                        return distance < bubbleRadius * 2
-                    }
-
-                    if !hasOverlap {
-                        newPosition = candidate
-                        break
-                    }
-                }
-
-                if let position = newPosition {
-                    newBubbles.append(BubbleData(id: UUID(), position: position))
-                }
-            }
-        
-        bubbles.append(contentsOf: newBubbles)
-    }
     
-    
-    func removeBubble(id: UUID) {
-        bubbles.removeAll { $0.id == id }
-    }
-    
-    // onCountDown(): Decrements the countdown timer by one second. If the timer reaches zero, it stops counting down.
-    func onCountDown() {
-        if countdownInSeconds > 0 {
-            countdownInSeconds -= 1
-        } else {
-            isCountingDown = false
-        }
-    }
     
     struct Bubble: View {
         @State private var value: Int = 0
