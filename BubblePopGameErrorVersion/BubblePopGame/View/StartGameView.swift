@@ -12,8 +12,8 @@ struct StartGameView: View {
     @StateObject private var viewModel: StartGameViewModel
         
         // Initialize with the parameters
-        init(timerValue: Double, numberOfBubbles: Double) {
-            _viewModel = StateObject(wrappedValue: StartGameViewModel(timerValue: timerValue, numberOfBubbles: numberOfBubbles))
+    init(timerValue: Double, numberOfBubbles: Double, playerName : String) {
+        _viewModel = StateObject(wrappedValue: StartGameViewModel(timerValue: timerValue, numberOfBubbles: numberOfBubbles, playerName: playerName))
         }
     
     var body: some View {
@@ -59,7 +59,7 @@ struct StartGameView: View {
                 }
                 
                 NavigationLink(
-                    destination: HighScoreView(score: viewModel.score),
+                    destination: HighScoreView(score: viewModel.score, playerName: viewModel.playerName),
                     isActive: $viewModel.navigateToHighScore
                 ) {
                     EmptyView()
@@ -141,6 +141,6 @@ struct StartGameView: View {
     
 }
 #Preview {
-    StartGameView(timerValue: 10, numberOfBubbles: 15)
+    StartGameView(timerValue: 10, numberOfBubbles: 15, playerName: "Max")
 }
 

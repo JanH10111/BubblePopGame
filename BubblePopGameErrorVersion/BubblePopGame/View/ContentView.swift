@@ -24,7 +24,7 @@ struct ContentView: View {
                 })
                 .padding(50)
                 
-                NavigationLink(destination: HighScoreView(score: 0),
+                NavigationLink(destination: HighScoreView(score: 0, playerName: ""),
                                label: {
                     Text("High Score")
                         .font(.title)

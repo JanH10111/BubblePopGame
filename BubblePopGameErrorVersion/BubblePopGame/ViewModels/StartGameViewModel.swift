@@ -22,13 +22,15 @@ class StartGameViewModel: ObservableObject {
     private var timerValue : Double
     private var numberOfBubbles: Double
     private var timer: Timer?
+    var playerName: String
     
     
     
-    init(timerValue: Double, numberOfBubbles: Double) {
+    init(timerValue: Double, numberOfBubbles: Double, playerName: String) {
             self.timerValue = timerValue
             self.numberOfBubbles = numberOfBubbles
             self.countdownInSeconds = Int(timerValue)
+            self.playerName = playerName
         }
     
     func startTimer() {

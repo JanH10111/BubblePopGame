@@ -12,6 +12,7 @@ struct SettingsView: View {
     @State private var countdownInput = ""
     @State private var countdownValue: Double = 60
     @State private var numberOfBubbles: Double = 15
+    @State private var playerName: String = ""
     var body: some View {
         VStack{
             Label("Settings", systemImage: "")
@@ -20,7 +21,7 @@ struct SettingsView: View {
             Spacer()
             Text("Enter Your Name:")
             
-            TextField("Enter Name", text: $highScoreViewModel.playerName)
+            TextField("Enter Name", text: $playerName)
                 .padding()
             Spacer()
             Text("Game Time")
@@ -40,7 +41,7 @@ struct SettingsView: View {
             Text("\(Int(numberOfBubbles))")
                 .padding()
             NavigationLink (
-                destination: StartGameView(timerValue: countdownValue, numberOfBubbles: numberOfBubbles),
+                destination: StartGameView(timerValue: countdownValue, numberOfBubbles: numberOfBubbles, playerName: playerName),
                 label: {
                     Text("Start Game")
                         .font(.title)

@@ -11,6 +11,7 @@ struct HighScoreView: View {
     
     @ObservedObject var highScoreViewModel = HighScoreViewModel()
     var score : Int
+    var playerName: String
     
    
     
@@ -20,7 +21,10 @@ struct HighScoreView: View {
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .padding()
-                    .onAppear{highScoreViewModel.addScore(name: highScoreViewModel.playerName, score: score)}
+                    .onAppear{
+                        highScoreViewModel.loadHighScores()
+                        highScoreViewModel.savePlayerScore(playerName: playerName, score: score)
+                    }
                 
                 //Score Board
                 VStack(spacing: 15) {
@@ -35,12 +39,9 @@ struct HighScoreView: View {
                     
                     Divider()
                     
-                    ForEach(highScoreViewModel.highScores, id: \.name) { entry in
-                        HStack {
-                            Text(entry.name)
-                            Spacer()
-                            Text("\(entry.score)")
-                        }
+                    List(highScoreViewModel.highScores) { score in
+                                    Text("\(score.playerName): \(score.score)")
+                                }
                         .padding(.horizontal, 50)
                     }
                 }
@@ -62,12 +63,11 @@ struct HighScoreView: View {
                         .background(Color.blue)
                         .cornerRadius(12)
                         .padding(.bottom, 60)
-                })}
+                })
             
             .padding()
         }
-    }
-
+}
 #Preview {
-    HighScoreView(score:55)
+    HighScoreView(score:55, playerName: "Max")
 }
