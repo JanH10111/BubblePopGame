@@ -8,10 +8,13 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @StateObject var highScoreViewModel = HighScoreViewModel()
+    @ObservedObject var highScoreViewModel = HighScoreViewModel()
     @State private var countdownInput = ""
     @State private var countdownValue: Double = 60
     @State private var numberOfBubbles: Double = 15
+    @State private var playerName: String = ""
+    @State private var navigateToStartGame = false
+    @State private var showNameAlert = false
     var body: some View {
         VStack{
             Label("Settings", systemImage: "")
@@ -20,15 +23,15 @@ struct SettingsView: View {
             Spacer()
             Text("Enter Your Name:")
             
-            TextField("Enter Name", text: $highScoreViewModel.taskDescription)
+            TextField("Enter Name", text: $playerName)
                 .padding()
             Spacer()
             Text("Game Time")
             Slider(value: $countdownValue, in: 0...60, step: 1)
                 .padding()
                 .padding()
-                .onChange(of: countdownValue) {value in
-                    countdownInput = "\(Int(value))"
+                .onChange(of: countdownValue) {
+                    countdownInput = "\(Int(countdownValue))"
                 }
             Text("\(Int(countdownValue))")
                 .padding()
@@ -39,12 +42,23 @@ struct SettingsView: View {
             
             Text("\(Int(numberOfBubbles))")
                 .padding()
-            NavigationLink (
-                destination: StartGameView(timerValue: countdownValue, numberOfBubbles: numberOfBubbles),
-                label: {
-                    Text("Start Game")
-                        .font(.title)
-                })
+            
+            Button(action: {
+                if playerName.isEmpty {
+                    showNameAlert = true
+                } else {
+                    navigateToStartGame = true
+                }
+            }) {
+                Text("Start Game")
+                    .font(.title)
+            }
+            .alert("Please enter a name", isPresented: $showNameAlert) {
+                Button("OK", role: .cancel) { }
+            }
+            .navigationDestination(isPresented: $navigateToStartGame) {
+                StartGameView(timerValue: countdownValue, numberOfBubbles: numberOfBubbles, playerName: playerName)
+                        }
             Spacer()
             
         }

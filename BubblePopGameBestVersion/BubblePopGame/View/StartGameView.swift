@@ -9,126 +9,83 @@ import SwiftUI
 
 struct StartGameView: View {
     
-    var timerValue : Double
-    var numberOfBubbles: Double
-    @State private var countdownInSeconds = 0
-    @State private var isCountingDown = false
-    @State private var countdownInput = ""
-    @State private var score = 0
-    @State private var bubbles: [BubbleData] = []
+    @StateObject private var viewModel: StartGameViewModel
+        
+        // Initialize with the parameters
+    init(timerValue: Double, numberOfBubbles: Double, playerName : String) {
+        _viewModel = StateObject(wrappedValue: StartGameViewModel(timerValue: timerValue, numberOfBubbles: numberOfBubbles, playerName: playerName))
+        }
     
     var body: some View {
-        VStack {
-            HStack {
-                VStack {
-                    Text("Time Left:")
-                        .font(.headline)
-                    Text("\(countdownInSeconds)")
-                        .font(.largeTitle)
-                        .bold()
-                        .onAppear {
-                            countdownInSeconds = Int(timerValue)
-                            isCountingDown = true
-                            startBubbleGeneration()
+ 
+            ZStack{
+                GeometryReader { geo in
+                    ZStack {
+                        ForEach(viewModel.bubbles) { bubble in
+                            Bubble(
+                                    score: $viewModel.score,
+                                    lastPoppedColor: $viewModel.lastPoppedColor,
+                                    position: bubble.position,
+                                    id: bubble.id,
+                                    removeBubble: viewModel.removeBubble
+                                )
                         }
-                        .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect(), perform: { _ in
-                                onCountDown()
-                        })
+                    }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.gray.opacity(0.2))
+                .cornerRadius(10)
+                .onAppear {
+                    viewModel.gameAreaSize = geo.size
                 }
-                
-                Spacer()
-                
+                }
                 VStack {
-                    Text("Score:")
-                        .font(.headline)
-                    Text(String(score))
-                        .font(.largeTitle)
-                        .bold()
+                    HStack {
+                        VStack {
+                            Text("Time Left:")
+                                .font(.headline)
+                                .foregroundStyle(.mint)
+                            Text("\(viewModel.countdownInSeconds)")
+                                .font(.largeTitle)
+                                .bold()
+                                .foregroundStyle(.mint)
+                                .onAppear{ viewModel.startTimer()
+                                    
+                                }
+                                }
+                        
+                        Spacer()
+                        
+                        VStack {
+                            Text("Score:")
+                                .font(.headline)
+                                .foregroundStyle(.mint)
+                            Text(String(viewModel.score))
+                                .font(.largeTitle)
+                                .bold()
+                                .foregroundStyle(.mint)
+                        }
+                    }
+                    .padding([.top, .leading, .trailing],50)
+                    Spacer()
                 }
+                
             }
-            .padding([.top, .leading, .trailing], 30.0)
-            Divider()
-            
-            ZStack {
-                ForEach(bubbles) { bubble in
-                    Bubble(score: $score, position: bubble.position, id: bubble.id, removeBubble: removeBubble)
-                }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color.gray.opacity(0.2))
-            .cornerRadius(10)
+            .ignoresSafeArea()
+            .navigationDestination(isPresented: $viewModel.navigateToHighScore) {
+                            HighScoreView(score: viewModel.score, playerName: viewModel.playerName)
+                        }
         }
-        .ignoresSafeArea()
-    }
     
-    struct BubbleData: Identifiable {
-        let id: UUID
-        let position: CGPoint
-    }
-    
-    func startBubbleGeneration() {
-        Timer.scheduledTimer(withTimeInterval: Double.random(in: 0.1...1), repeats: true) { timer in
-            if bubbles.count < 15 {
-                addBubble()
-            }
-        }
-    }
-    
-    func addBubble() {
-        let diameter = UIScreen.main.bounds.width / 6
-        let screenWidth = UIScreen.main.bounds.width
-        let screenHeight = UIScreen.main.bounds.height * 0.6  // Limit placement area
-        
-        let randomPosition = CGPoint(
-            x: CGFloat.random(in: diameter...(screenWidth - diameter)),
-            y: CGFloat.random(in: diameter...(screenHeight - diameter))
-        )
-        
-        // Ensure no overlapping
-        if !bubbles.contains(where: { bubble in
-            let distance = hypot(bubble.position.x - randomPosition.x, bubble.position.y - randomPosition.y)
-            return distance < diameter * 1.1 // Adding a small margin for safety
-        }) {
-            let newBubble = BubbleData(id: UUID(), position: randomPosition)
-            
-            DispatchQueue.main.async {
-                // Re-check before appending to avoid race condition
-                if !bubbles.contains(where: { bubble in
-                    let distance = hypot(bubble.position.x - newBubble.position.x, bubble.position.y - newBubble.position.y)
-                    return distance < diameter * 1.1
-                }) {
-                    bubbles.append(newBubble)
-                    removeBubbleAfterDelay(newBubble.id)
-                }
-            }
-        }
-    }
 
-    func removeBubbleAfterDelay(_ id: UUID) {
-        DispatchQueue.main.asyncAfter(deadline: .now() + Double.random(in: 2...5)) {
-            bubbles.removeAll { $0.id == id }
-        }
-    }
     
-    func removeBubble(id: UUID) {
-        bubbles.removeAll { $0.id == id }
-    }
-    
-    // onCountDown(): Decrements the countdown timer by one second. If the timer reaches zero, it stops counting down.
-    func onCountDown() {
-        if countdownInSeconds > 0 {
-            countdownInSeconds -= 1
-        } else {
-            isCountingDown = false
-        }
-    }
-    
+    // View for the bubbles
     struct Bubble: View {
         @State private var value: Int = 0
         @State private var scale: CGFloat = 1.0
         @State private var color: Color = .yellow  // Default color
         @State private var isVisible: Bool = true
         @Binding var score: Int
+        @Binding var lastPoppedColor: Color?
         
         let position: CGPoint
         let id: UUID
@@ -184,16 +141,19 @@ struct StartGameView: View {
             DispatchQueue.main.asyncAfter(deadline: .now()) {
                 withAnimation {
                     isVisible = false
-                    score += value
+                    if lastPoppedColor != nil && lastPoppedColor == color {
+                                    score += Int(Double(value) * 1.5)
+                                } else {
+                                    score += value
+                                }
+                                lastPoppedColor = color
                     removeBubble(id)
                 }
             }
         }
     }
-
-    
 }
 #Preview {
-    StartGameView(timerValue: 50, numberOfBubbles: 15)
+    StartGameView(timerValue: 40, numberOfBubbles: 15, playerName: "Max")
 }
 

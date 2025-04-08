@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        NavigationView{
+        NavigationStack{
             VStack{
                 Label("Bubble Pop", systemImage: "")
                     .foregroundStyle(.mint)
@@ -23,8 +23,7 @@ struct ContentView: View {
                         .font(.title)
                 })
                 .padding(50)
-                
-                NavigationLink(destination: HighScoreView(),
+                NavigationLink(destination: HighScoreView(score: 0, playerName: ""),
                                label: {
                     Text("High Score")
                         .font(.title)
