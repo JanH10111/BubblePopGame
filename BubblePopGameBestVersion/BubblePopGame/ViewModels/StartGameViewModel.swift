@@ -24,6 +24,9 @@ class StartGameViewModel: ObservableObject {
     private var numberOfBubbles: Double
     private var timer: Timer?
     var playerName: String
+    private var bubbleSpawnInterval: Double = 0.5
+    private let screenWidth = UIScreen.main.bounds.width
+    private let screenHeight = UIScreen.main.bounds.height
     
     
     
@@ -38,7 +41,6 @@ class StartGameViewModel: ObservableObject {
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
             DispatchQueue.main.async {
                 self.onCountDown()
-                self.generateBubbles()
             }
         }
     }
@@ -64,59 +66,48 @@ class StartGameViewModel: ObservableObject {
     }
     
     
-    func generateBubbles() {
+    func startGenerateBubbles() {
         let screenSize = gameAreaSize
         let maxBubbles = Int(numberOfBubbles)
-        
-        // Decide how many bubbles we want on screen this second
-        let desiredBubbleCount = Int.random(in: 1...maxBubbles)
-        
-        // Randomly remove a few bubbles (e.g., up to half)
-        let bubblesToRemove = Int.random(in: 0...(bubbles.count/2))
-        for _ in 0..<bubblesToRemove {
-            if let randomBubble = bubbles.randomElement() {
-                removeBubble(id: randomBubble.id)
-            }
-        }
-        
-        // Calculate how many new bubbles we need
         let currentCount = bubbles.count
-        let bubblesNeeded = max(0, desiredBubbleCount - currentCount)
-        
         var newBubbles: [BubbleData] = []
         
- 
-            for _ in 0..<bubblesNeeded {
-                var newPosition: CGPoint?
-
-                while true {
-                    let x = CGFloat.random(in: bubbleRadius...(screenSize.width - bubbleRadius))
-                    let y = CGFloat.random(in: bubbleRadius...(screenSize.height - bubbleRadius))
-                    let candidate = CGPoint(x: x, y: y)
-
-                    let hasOverlap = (bubbles + newBubbles).contains { existing in
-                        let dx = existing.position.x - candidate.x
-                        let dy = existing.position.y - candidate.y
-                        let distance = sqrt(dx * dx + dy * dy)
-                        return distance < bubbleRadius * 2
-                    }
-
-                    if !hasOverlap {
-                        newPosition = candidate
-                        break
-                    }
-                }
-
-                if let position = newPosition {
-                    newBubbles.append(BubbleData(id: UUID(), position: position))
-                }
+        Timer.scheduledTimer(withTimeInterval: bubbleSpawnInterval, repeats: true) { timer in
+            if currentCount < numberOfBubbles {
+                spawnBubble()
             }
-        
-        bubbles.append(contentsOf: newBubbles)
+            else{
+                timer.invalidate()
+            }
+        }
     }
     
+    //Function to spawn a new bubble at a random position with random parameters
+    func spawnBubble(){
+        let randomXPosition = CGFloat.random(in: 50...(screenWidth - 50))
+        let randomColor =
+        
+        let randomSpeed = Double.random(in: 5...10)
+        let initalPosition CGPoint(x:randomXPosition, y: screenHeight + 50)
+        var bubble = Bubble(position: initalPosition, color: randomColor, speed: randomSpeed)
+        
+        bubbles.append(bubble)
+        
+        withAnimation(.linear(duration: randomSpeed)){
+            moveBubbleToTop(&bubble)
+        }
+    }
     
+    //Function to move the ballooon to the top of the screen
+    func moveBubbleToTop (_ bubble: inout Bubble){
+        let endPosition = CGPoint(x: bubble.position, y: -150)
+        bubble.position = endPosition
+        
+        if let index = bubbles.firstIndex(where: { $0.id == bubble.id}) {
+            bubble[index] = bubble}
+        }
+    }
   
     
     
-}
+

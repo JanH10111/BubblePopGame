@@ -8,5 +8,6 @@ import Foundation
 struct BubbleData: Identifiable {
     let id: UUID
     var position: CGPoint
+    var speed: Double
 }
 
