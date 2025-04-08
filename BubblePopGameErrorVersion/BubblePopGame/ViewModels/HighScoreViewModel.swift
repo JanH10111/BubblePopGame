@@ -9,11 +9,6 @@ import Foundation
 class HighScoreViewModel: ObservableObject {
     @Published var highScores: [HighScores] = []
     
-//    func addScore(name: String, score: Int) {
-//        highScores.append(<#T##newElement: HighScores##HighScores#>)
-//        highScores.sort { $0.score > $1.score }
-//    }
-    
     func loadHighScores(){
         if let data = UserDefaults.standard.data(forKey: "HighScores"){
             let decoder = JSONDecoder()
