@@ -26,6 +26,8 @@ class StartGameViewModel: ObservableObject {
     private var bubbleSpawnInterval: Double = 0.3
     private let screenWidth = UIScreen.main.bounds.width
     private let screenHeight = UIScreen.main.bounds.height
+    private var numberOfLanes: Int
+    private var laneCooldowns: [Int: Bool] = [:]
     
     
     
@@ -34,6 +36,10 @@ class StartGameViewModel: ObservableObject {
             self.numberOfBubbles = numberOfBubbles
             self.countdownInSeconds = Int(timerValue)
             self.playerName = playerName
+        self.numberOfLanes = Int(screenWidth / (UIScreen.main.bounds.width / 6))
+        for i in 0..<numberOfLanes {
+            laneCooldowns[i] = true
+        }
         }
     
     func startTimer() {
@@ -80,67 +86,51 @@ class StartGameViewModel: ObservableObject {
     }
     
     //Function to spawn a new bubble at a random position with random parameters
-    func spawnBubble(){
-        var initialPosition: CGPoint = .zero
-        let randomColor: Color
-        let bubbleValue: Int
-        let possibility = Int.random(in: 0..<100)
-        switch possibility {
-        case 0...39:
-            bubbleValue = 1
-            randomColor = .red
-        case 40...69:
-            bubbleValue = 2
-            randomColor = .pink
-        case 70...84:
-            bubbleValue = 5
-            randomColor = .green
-        case 85...94:
-            bubbleValue = 8
-            randomColor = .blue
-        case 95...99:
-            bubbleValue = 10
-            randomColor = .black
-        default:
-            bubbleValue = 0
-            randomColor = .yellow
+    func spawnBubble() {
+        guard let lane = getAvailableLane() else {
+            // No lane available right now
+            return
         }
-        let speed = 70.0 * (1 + exp(1.3 * (1 - Double(countdownInSeconds) / timerValue)))
-        var positionIsValid = false
-        let minSpacing: CGFloat = bubbleRadius * 2
-        
-        var attempts = 0
-        let maxAttempts = 20
-        
-        while !positionIsValid && attempts < maxAttempts {
-                let potentialX = CGFloat.random(in: 50...(screenWidth - 50))
-                let potentialPosition = CGPoint(x: potentialX, y: screenHeight + 50)
 
-                positionIsValid = !bubbles.contains {
-                    let isNearBottom = $0.position.y > screenHeight - 100
-                    let isTooClose = abs($0.position.x - potentialX) < minSpacing
-                    return isNearBottom && isTooClose
-                }
+        let bubbleValue: Int
+        let randomColor: Color
+        let possibility = Int.random(in: 0..<100)
+        
+        switch possibility {
+        case 0...39: bubbleValue = 1; randomColor = .red
+        case 40...69: bubbleValue = 2; randomColor = .pink
+        case 70...84: bubbleValue = 5; randomColor = .green
+        case 85...94: bubbleValue = 8; randomColor = .blue
+        case 95...99: bubbleValue = 10; randomColor = .black
+        default: bubbleValue = 0; randomColor = .yellow
+        }
 
+        let speed = 60.0 * (1 + exp(1.5 * (1 - Double(countdownInSeconds) / timerValue)))
+        
+        // Position the bubble based on lane
+        let laneWidth = screenWidth / CGFloat(numberOfLanes)
+        let xPos = CGFloat(lane) * laneWidth + laneWidth / 2
+        let startPos = CGPoint(x: xPos, y: screenHeight + 50)
 
-                if positionIsValid {
-                    initialPosition = potentialPosition
-                }
-            attempts += 1
-            }
+        var bubble = BubbleData(position: startPos, speed: speed, color: randomColor, value: bubbleValue)
         
-        var bubble = BubbleData(position: initialPosition, speed: speed, color: randomColor, value: bubbleValue)
+        // Lock the lane temporarily based on the bubble’s travel time
+        laneCooldowns[lane] = false
+        let unlockTime = (screenHeight / speed)/8
         
-        
+        DispatchQueue.main.asyncAfter(deadline: .now() + unlockTime) {
+            self.laneCooldowns[lane] = true
+        }
+
         bubbles.append(bubble)
-        
-        withAnimation(.linear(duration: screenHeight / speed)){
+
+        withAnimation(.linear(duration: screenHeight/speed)) {
             moveBubbleToTop(&bubble)
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + screenHeight / speed) {
-               self.removeBubble(id: bubble.id)
-           }
-        
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + screenHeight/speed) {
+            self.removeBubble(id: bubble.id)
+        }
     }
     
     //Function to move the ballooon to the top of the screen
@@ -169,10 +159,18 @@ class StartGameViewModel: ObservableObject {
                 lastPoppedColor = currentColor
             }
             }
+    
+    
+    func getAvailableLane() -> Int? {
+        let availableLanes = laneCooldowns.filter { $0.value }.map { $0.key }
+        return availableLanes.randomElement()
+    }
+
+
+      
+        
         }
 
 
-  
-    
     
 

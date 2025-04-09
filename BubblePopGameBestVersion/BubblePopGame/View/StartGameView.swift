@@ -24,11 +24,11 @@ struct StartGameView: View {
                             BubbleView(
                                     score: $viewModel.score,
                                     lastPoppedColor: $viewModel.lastPoppedColor,
-                                    bubble: bubble
+                                    bubble: bubble,
+                                    onTap: {
+                                            viewModel.popBubble(bubble)
+                                        }
                                 )
-                            .onTapGesture {
-                                viewModel.popBubble(bubble)
-                            }
                         }
                     }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -72,18 +72,14 @@ struct StartGameView: View {
                         }
         }
     
-
-    
     // View for the bubbles
     struct BubbleView: View {
-        @State private var value: Int = 0
         @State private var scale: CGFloat = 1.0
-        @State private var color: Color = .yellow  // Default color
-        @State private var isVisible: Bool = true
         @Binding var score: Int
         @Binding var lastPoppedColor: Color?
         
         let bubble: BubbleData
+        let onTap: () -> Void
         
         private var diameter: CGFloat {
             UIScreen.main.bounds.width / 6
@@ -94,12 +90,22 @@ struct StartGameView: View {
                 .fill(bubble.color)
                 .frame(width: 60, height: 60)
                 .position(bubble.position)
+                .scaleEffect(scale)
                 .opacity(bubble.isPopped ? 0 : 1)
+                .animation(.easeIn(duration: 0.2), value: scale)
+                .onTapGesture {
+                    withAnimation(.easeIn(duration: 0.2)) {
+                        scale = 0.1
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                        onTap()
+                    }
+                }
         }
     }
     
 }
 #Preview {
-    StartGameView(timerValue: 20, numberOfBubbles: 10, playerName: "Max")
+    StartGameView(timerValue: 40, numberOfBubbles: 15, playerName: "Max")
 }
 
