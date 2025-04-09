@@ -23,7 +23,7 @@ class StartGameViewModel: ObservableObject {
     private var numberOfBubbles: Double
     private var timer: Timer?
     var playerName: String
-    private var bubbleSpawnInterval: Double = 0.5
+    private var bubbleSpawnInterval: Double = 0.3
     private let screenWidth = UIScreen.main.bounds.width
     private let screenHeight = UIScreen.main.bounds.height
     
@@ -55,6 +55,7 @@ class StartGameViewModel: ObservableObject {
             countdownInSeconds -= 1
         } else {
             isCountingDown = false
+            
             navigateToHighScore = true
             stopTimer()
         }
@@ -104,9 +105,9 @@ class StartGameViewModel: ObservableObject {
             bubbleValue = 0
             randomColor = .yellow
         }
-        let speed = 7.0
+        let speed = 70.0 * (1 + exp(1.3 * (1 - Double(countdownInSeconds) / timerValue)))
         var positionIsValid = false
-        let minSpacing: CGFloat = bubbleRadius
+        let minSpacing: CGFloat = bubbleRadius * 2
         
         var attempts = 0
         let maxAttempts = 20
@@ -133,11 +134,10 @@ class StartGameViewModel: ObservableObject {
         
         bubbles.append(bubble)
         
-        withAnimation(.linear(duration: speed)){
+        withAnimation(.linear(duration: screenHeight / speed)){
             moveBubbleToTop(&bubble)
         }
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + speed) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + screenHeight / speed) {
                self.removeBubble(id: bubble.id)
            }
         
@@ -170,6 +170,8 @@ class StartGameViewModel: ObservableObject {
             }
             }
         }
+
+
   
     
     

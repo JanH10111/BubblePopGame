@@ -9,7 +9,7 @@ import SwiftUI
 
 struct HighScoreView: View {
     
-    @ObservedObject var highScoreViewModel = HighScoreViewModel()
+    @StateObject var highScoreViewModel = HighScoreViewModel()
     var score : Int
     var playerName: String
     
@@ -77,6 +77,7 @@ struct HighScoreView: View {
                 })
             
             .padding()
+            .navigationBarBackButtonHidden(true)
         }
 }
 #Preview {

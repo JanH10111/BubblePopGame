@@ -100,6 +100,6 @@ struct StartGameView: View {
     
 }
 #Preview {
-    StartGameView(timerValue: 40, numberOfBubbles: 10, playerName: "Max")
+    StartGameView(timerValue: 20, numberOfBubbles: 10, playerName: "Max")
 }
 

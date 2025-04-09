@@ -31,6 +31,7 @@ struct ContentView: View {
                 Spacer()
             }
             .padding()
+            .navigationBarBackButtonHidden(true)
         }
     }
 }
