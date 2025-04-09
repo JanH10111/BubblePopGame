@@ -19,25 +19,21 @@ struct StartGameView: View {
     var body: some View {
  
             ZStack{
-                GeometryReader { geo in
                     ZStack {
                         ForEach(viewModel.bubbles) { bubble in
-                            Bubble(
+                            BubbleView(
                                     score: $viewModel.score,
                                     lastPoppedColor: $viewModel.lastPoppedColor,
-                                    position: bubble.position,
-                                    id: bubble.id,
-                                    removeBubble: viewModel.removeBubble
+                                    bubble: bubble
                                 )
+                            .onTapGesture {
+                                viewModel.popBubble(bubble)
+                            }
                         }
                     }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Color.gray.opacity(0.2))
                 .cornerRadius(10)
-                .onAppear {
-                    viewModel.gameAreaSize = geo.size
-                }
-                }
                 VStack {
                     HStack {
                         VStack {
@@ -48,9 +44,6 @@ struct StartGameView: View {
                                 .font(.largeTitle)
                                 .bold()
                                 .foregroundStyle(.mint)
-                                .onAppear{ viewModel.startTimer()
-                                    
-                                }
                                 }
                         
                         Spacer()
@@ -71,6 +64,9 @@ struct StartGameView: View {
                 
             }
             .ignoresSafeArea()
+            .onAppear{ viewModel.startTimer()
+                viewModel.startGenerateBubbles()
+            }
             .navigationDestination(isPresented: $viewModel.navigateToHighScore) {
                             HighScoreView(score: viewModel.score, playerName: viewModel.playerName)
                         }
@@ -79,7 +75,7 @@ struct StartGameView: View {
 
     
     // View for the bubbles
-    struct Bubble: View {
+    struct BubbleView: View {
         @State private var value: Int = 0
         @State private var scale: CGFloat = 1.0
         @State private var color: Color = .yellow  // Default color
@@ -87,9 +83,7 @@ struct StartGameView: View {
         @Binding var score: Int
         @Binding var lastPoppedColor: Color?
         
-        let position: CGPoint
-        let id: UUID
-        let removeBubble: (UUID) -> Void
+        let bubble: BubbleData
         
         private var diameter: CGFloat {
             UIScreen.main.bounds.width / 6
@@ -97,63 +91,15 @@ struct StartGameView: View {
         
         var body: some View {
             Circle()
-                .fill(color)
-                .frame(width: diameter)
-                .scaleEffect(scale)
-                .onAppear {
-                    updateColorAndValue()
-                }
-                .position(position)
-                .opacity(isVisible ? 1 : 0)
-                .onTapGesture {
-                    popBubble()
-                }
-        }
-        
-        // Function to set value and color
-        private func updateColorAndValue() {
-            let possibility = Int.random(in: 0..<100)
-            switch possibility {
-            case 0...39:
-                value = 1
-                color = .red
-            case 40...69:
-                value = 2
-                color = .pink
-            case 70...84:
-                value = 5
-                color = .green
-            case 85...94:
-                value = 8
-                color = .blue
-            case 95...99:
-                value = 10
-                color = .black
-            default:
-                color = .yellow
-            }
-        }
-        
-        private func popBubble() {
-            withAnimation(.spring(response: 0.5, dampingFraction: 0.8, blendDuration: 0)) {
-                scale = 0.5
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now()) {
-                withAnimation {
-                    isVisible = false
-                    if lastPoppedColor != nil && lastPoppedColor == color {
-                                    score += Int(Double(value) * 1.5)
-                                } else {
-                                    score += value
-                                }
-                                lastPoppedColor = color
-                    removeBubble(id)
-                }
-            }
+                .fill(bubble.color)
+                .frame(width: 60, height: 60)
+                .position(bubble.position)
+                .opacity(bubble.isPopped ? 0 : 1)
         }
     }
+    
 }
 #Preview {
-    StartGameView(timerValue: 40, numberOfBubbles: 15, playerName: "Max")
+    StartGameView(timerValue: 40, numberOfBubbles: 10, playerName: "Max")
 }
 
