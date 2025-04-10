@@ -10,67 +10,80 @@ import SwiftUI
 struct StartGameView: View {
     
     @StateObject private var viewModel: StartGameViewModel
-        
-        // Initialize with the parameters
+    
     init(timerValue: Double, numberOfBubbles: Double, playerName : String) {
         _viewModel = StateObject(wrappedValue: StartGameViewModel(timerValue: timerValue, numberOfBubbles: numberOfBubbles, playerName: playerName))
-        }
+    }
     
     var body: some View {
- 
-            ZStack{
-                    ZStack {
-                        ForEach(viewModel.bubbles) { bubble in
-                            BubbleView(
-                                    score: $viewModel.score,
-                                    lastPoppedColor: $viewModel.lastPoppedColor,
-                                    bubble: bubble,
-                                    onTap: {
-                                            viewModel.popBubble(bubble)
-                                        }
-                                )
+        
+        ZStack{
+            ZStack {
+                ForEach(viewModel.bubbles) { bubble in
+                    BubbleView(
+                        score: $viewModel.score,
+                        lastPoppedColor: $viewModel.lastPoppedColor,
+                        bubble: bubble,
+                        onTap: {
+                            viewModel.popBubble(bubble)
                         }
-                    }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color.gray.opacity(0.2))
-                .cornerRadius(10)
-                VStack {
-                    HStack {
-                        VStack {
-                            Text("Time Left:")
-                                .font(.headline)
-                                .foregroundStyle(.mint)
-                            Text("\(viewModel.countdownInSeconds)")
-                                .font(.largeTitle)
-                                .bold()
-                                .foregroundStyle(.mint)
-                                }
-                        
-                        Spacer()
-                        
-                        VStack {
-                            Text("Score:")
-                                .font(.headline)
-                                .foregroundStyle(.mint)
-                            Text(String(viewModel.score))
-                                .font(.largeTitle)
-                                .bold()
-                                .foregroundStyle(.mint)
-                        }
-                    }
-                    .padding([.top, .leading, .trailing],50)
-                    Spacer()
+                    )
                 }
-                
             }
-            .ignoresSafeArea()
-            .onAppear{ viewModel.startTimer()
-                viewModel.startGenerateBubbles()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.gray.opacity(0.2))
+            .cornerRadius(10)
+            VStack {
+                HStack {
+                    VStack {
+                        Text("Time Left:")
+                            .font(.headline)
+                            .foregroundStyle(.mint)
+                        Text("\(viewModel.countdownInSeconds)")
+                            .font(.largeTitle)
+                            .bold()
+                            .foregroundStyle(.mint)
+                    }
+                    
+                    Spacer()
+                    
+                    VStack {
+                        Text("Score:")
+                            .font(.headline)
+                            .foregroundStyle(.mint)
+                        Text(String(viewModel.score))
+                            .font(.largeTitle)
+                            .bold()
+                            .foregroundStyle(.mint)
+                    }
+                    
+                    Spacer()
+                    
+                    VStack {
+                        Text("Highscore:")
+                            .font(.headline)
+                            .foregroundStyle(.mint)
+                        Text(String(viewModel.highestScore))
+                            .font(.largeTitle)
+                            .bold()
+                            .foregroundStyle(.mint)
+                    }
+                }
+                .padding([.leading, .trailing],30)
+                .padding(.top, 65)
+                Spacer()
             }
-            .navigationDestination(isPresented: $viewModel.navigateToHighScore) {
-                            HighScoreView(score: viewModel.score, playerName: viewModel.playerName)
-                        }
+            
         }
+        .ignoresSafeArea()
+        .onAppear{ viewModel.startTimer()
+            viewModel.startGenerateBubbles()
+            viewModel.loadHighestScore()
+        }
+        .navigationDestination(isPresented: $viewModel.navigateToHighScore) {
+            HighScoreView(score: viewModel.score, playerName: viewModel.playerName)
+        }
+    }
     
     // View for the bubbles
     struct BubbleView: View {

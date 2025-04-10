@@ -58,7 +58,7 @@ struct SettingsView: View {
             }
             .navigationDestination(isPresented: $navigateToStartGame) {
                 StartGameView(timerValue: countdownValue, numberOfBubbles: numberOfBubbles, playerName: playerName)
-                        }
+            }
             Spacer()
             
         }

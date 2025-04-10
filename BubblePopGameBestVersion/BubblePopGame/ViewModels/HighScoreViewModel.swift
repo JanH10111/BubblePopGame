@@ -9,6 +9,7 @@ import Foundation
 class HighScoreViewModel: ObservableObject {
     @Published var highScores: [HighScores] = []
     
+    // Loads the Highscores from the UserDefaults
     func loadHighScores(){
         if let data = UserDefaults.standard.data(forKey: "HighScores"){
             let decoder = JSONDecoder()
@@ -17,6 +18,8 @@ class HighScoreViewModel: ObservableObject {
             }
         }
     }
+    
+    // Addes the new Highscore and saves the Highscores from the UserDefaults
     func savePlayerScore(playerName: String, score: Int){
         if(playerName != ""){
             let newHighscore = HighScores(playerName: playerName, score: score)
