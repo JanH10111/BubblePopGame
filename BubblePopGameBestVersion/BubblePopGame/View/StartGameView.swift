@@ -76,6 +76,7 @@ struct StartGameView: View {
             
         }
         .ignoresSafeArea()
+        .navigationBarBackButtonHidden(true)
         .onAppear{ viewModel.startTimer()
             viewModel.startGenerateBubbles()
             viewModel.loadHighestScore()

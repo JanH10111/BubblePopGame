@@ -16,33 +16,57 @@ struct SettingsView: View {
     @State private var navigateToStartGame = false
     @State private var showNameAlert = false
     var body: some View {
-        VStack{
-            Label("Settings", systemImage: "")
-                .foregroundStyle(.green)
-                .font(.title)
+        VStack {
+            HStack{
+                Image(systemName: "gearshape.fill")
+                    .foregroundStyle(.mint)
+                    .font(.system(size: 25))
+                Label("Settings", systemImage: "")
+                    .foregroundStyle(.mint)
+                    .font(.largeTitle.bold())
+            }.padding(.top)
+            
             Spacer()
-            Text("Enter Your Name:")
-            
-            TextField("Enter Name", text: $playerName)
-                .padding()
+
+            VStack {
+                Text("Enter Your Name")
+                    .font(.headline)
+                TextField("Enter Name", text: $playerName)
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .cornerRadius(10)
+                    .multilineTextAlignment(.center)
+            }
+            .foregroundStyle(.mint)
+            .padding(.horizontal, 40)
+
             Spacer()
-            Text("Game Time")
-            Slider(value: $countdownValue, in: 0...60, step: 1)
-                .padding()
-                .padding()
-                .onChange(of: countdownValue) {
-                    countdownInput = "\(Int(countdownValue))"
-                }
-            Text("\(Int(countdownValue))")
-                .padding()
+
+            VStack {
+                Text("Game Time: \(Int(countdownValue)) sec")
+                    .font(.headline)
+                Slider(value: $countdownValue, in: 0...60, step: 1)
+                    .onChange(of: countdownValue) {
+                        countdownInput = "\(Int(countdownValue))"
+                    }.tint(.gray)
+                
+            }
+            .foregroundStyle(.mint)
+            .padding(.horizontal, 40)
+
+            Spacer()
             
-            Text("Max Number of Bubbles")
-            Slider(value: $numberOfBubbles, in: 0...15, step: 1)
-                .padding()
+            VStack {
+                Text("Max Number of Bubbles: \(Int(numberOfBubbles))")
+                                        .font(.headline)
+                Slider(value: $numberOfBubbles, in: 0...15, step: 1)
+                    .tint(.gray)
+            }
+            .foregroundStyle(.mint)
+            .padding(.horizontal, 40)
             
-            Text("\(Int(numberOfBubbles))")
-                .padding()
-            
+            Spacer()
+
             Button(action: {
                 if playerName.isEmpty {
                     showNameAlert = true
@@ -54,13 +78,24 @@ struct SettingsView: View {
                     .font(.title)
             }
             .alert("Please enter a name", isPresented: $showNameAlert) {
-                Button("OK", role: .cancel) { }
+                Button("OK", role: .cancel) {}
             }
             .navigationDestination(isPresented: $navigateToStartGame) {
-                StartGameView(timerValue: countdownValue, numberOfBubbles: numberOfBubbles, playerName: playerName)
+                StartGameView(
+                    timerValue: countdownValue,
+                    numberOfBubbles: numberOfBubbles, playerName: playerName)
             }
-            Spacer()
+            .font(.title2.bold())
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(Color.white.opacity(0.9))
+            .foregroundStyle(.mint)
+            .cornerRadius(20)
+            .shadow(radius: 5)
+            .padding(.horizontal, 40)
             
+            Spacer()
+
         }
     }
 }
