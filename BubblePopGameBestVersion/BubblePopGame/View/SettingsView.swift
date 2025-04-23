@@ -29,7 +29,7 @@ struct SettingsView: View {
                     Image(systemName: "gearshape.fill")
                         .foregroundStyle(.mint)
                         .font(.system(size: 25))
-                    Label("Settings", systemImage: "")
+                    Text("Settings")
                         .foregroundStyle(.mint)
                         .font(.largeTitle.bold())
                 }.padding(.top)
