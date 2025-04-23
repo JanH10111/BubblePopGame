@@ -4,8 +4,10 @@
 //
 //  Created by Jan Huecking on 1/4/2025.
 //
+// ViewModel for managing the highscores
 
 import Foundation
+
 class HighScoreViewModel: ObservableObject {
     @Published var highScores: [HighScores] = []
     

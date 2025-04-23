@@ -4,17 +4,19 @@
 //
 //  Created by Jan Huecking on 1/4/2025.
 //
+// Homeview where the player can create a new game or navigate to the highscores
 
 import SwiftUI
 
 struct ContentView: View {
-    
+
     @State private var imageVisible = false
-    
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 30) {
 
+                //Image of the game that fades in
                 Image("BubblepopImage")
                     .resizable()
                     .scaledToFit()
@@ -24,7 +26,7 @@ struct ContentView: View {
                     .padding(.top, 60)
                     .opacity(imageVisible ? 1 : 0.1)
                     .animation(.easeInOut(duration: 1.5), value: imageVisible)
-                    .onAppear{imageVisible = true}
+                    .onAppear { imageVisible = true }
 
                 Spacer()
 
@@ -34,6 +36,7 @@ struct ContentView: View {
 
                 Spacer()
 
+                // Button create a new game by navigation to the SettingsView
                 NavigationLink(
                     destination: SettingsView(),
                     label: {
@@ -49,10 +52,11 @@ struct ContentView: View {
                 )
                 .padding(.horizontal, 40)
 
+                //Button to navigate to the HighScoreView
                 NavigationLink(
                     destination: HighScoreView(score: 0, playerName: ""),
                     label: {
-                        Text("High Score")
+                        Text("High Scores")
                             .font(.title2.bold())
                             .frame(maxWidth: .infinity)
                             .padding()

@@ -4,6 +4,7 @@
 //
 //  Created by Jan Huecking on 1/4/2025.
 //
+// ViewModel for handling the gamelogic for StartGameView
 
 import Foundation
 import SwiftUI
@@ -28,14 +29,15 @@ class StartGameViewModel: ObservableObject {
     private let screenWidth = UIScreen.main.bounds.width
     private let screenHeight = UIScreen.main.bounds.height
     private var numberOfLanes: Int
-    private var laneCooldowns: [Int: Bool] = [:]
+    private var laneCooldowns: [Int: Bool] = [:] // Prevents bubble overlap in lanes
+    let background: BackgroundOption
     
-    
-    
-    init(timerValue: Double, numberOfBubbles: Double, playerName: String) {
+    // Initializes the ViewModel with game settings and name of player
+    init(timerValue: Double, numberOfBubbles: Double, playerName: String, background: BackgroundOption) {
         self.timerValue = timerValue
         self.numberOfBubbles = numberOfBubbles
         self.countdownInSeconds = Int(timerValue)
+        self.background = background
         self.playerName = playerName
         self.numberOfLanes = Int(screenWidth / (UIScreen.main.bounds.width / 6))
         for i in 0..<numberOfLanes {
@@ -43,7 +45,7 @@ class StartGameViewModel: ObservableObject {
         }
     }
     
-    // Starts the countdown-timer
+    // Starts the countdowntimer
     func startTimer() {
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
             DispatchQueue.main.async {
@@ -52,13 +54,13 @@ class StartGameViewModel: ObservableObject {
         }
     }
     
-    // Stops the countdown-timer
+    // Stops the countdowntimer
     func stopTimer() {
         timer?.invalidate()
         timer = nil
     }
     
-    // Decrements the countdown timer by one second. If the timer reaches zero, it stops counting down.
+    // Decrements the countdown timer by one second. Navigates to HighScoreView when timer ends
     func onCountDown() {
         if countdownInSeconds > 0 {
             countdownInSeconds -= 1
@@ -70,13 +72,13 @@ class StartGameViewModel: ObservableObject {
         }
     }
     
-    // removes a specified bubble
+    // Removes a specified bubble
     func removeBubble(id: UUID) {
         bubbles.removeAll { $0.id == id }
     }
     
     
-    // starts the bubblegeneration
+    // Starts the bubblegeneration
     func startGenerateBubbles() {
         let maxBubbles = Int(numberOfBubbles)
         
@@ -87,7 +89,7 @@ class StartGameViewModel: ObservableObject {
         }
     }
     
-    //Function to spawn a new bubble with a random color at a random lane
+    // Spawns a new bubble with random color, value and speed at an available lane
     func spawnBubble() {
         
         // Check lane availibility
@@ -123,13 +125,12 @@ class StartGameViewModel: ObservableObject {
         laneCooldowns[lane] = false
         let unlockAdjustment = 8.0
         let unlockTime = (screenHeight / speed)/unlockAdjustment
-        
         DispatchQueue.main.asyncAfter(deadline: .now() + unlockTime) {
             self.laneCooldowns[lane] = true
         }
         
+        // Animate bubble rising and then remove it
         bubbles.append(bubble)
-        
         withAnimation(.linear(duration: screenHeight/speed)) {
             moveBubbleToTop(&bubble)
         }
@@ -173,7 +174,7 @@ class StartGameViewModel: ObservableObject {
         }
     }
     
-    // loads the current highscore
+    // Loads the current highscore
     func loadHighestScore() {
         if let data = UserDefaults.standard.data(forKey: "HighScores") {
             let decoder = JSONDecoder()

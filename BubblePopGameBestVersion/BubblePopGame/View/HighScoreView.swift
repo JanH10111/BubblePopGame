@@ -4,6 +4,8 @@
 //
 //  Created by Jan Huecking on 1/4/2025.
 //
+// View where the score board is displayed.
+// The highscores are loaded from a persistent file and sorted. Based on the highscores a list will be dynamically generated showing the five highest scores
 
 import SwiftUI
 
@@ -15,18 +17,21 @@ struct HighScoreView: View {
 
     var body: some View {
         VStack(spacing: 20) {
-            Text("🏅 Score Board")
+            //Heading of view
+            Text("🏅 Highscore Board")
                 .font(.largeTitle)
                 .fontWeight(.heavy)
                 .foregroundStyle(.mint)
                 .padding(.top, 30)
+                //onAppear the highscores are loaded from the userdefaults and if applicable the new playerscore is added
                 .onAppear {
                     highScoreViewModel.loadHighScores()
                     highScoreViewModel.savePlayerScore(
                         playerName: playerName, score: score)
                 }
             Spacer()
-            //Score Board
+            
+            //Highscore Board
             VStack(spacing: 15) {
                 HStack {
                     Text("Name")
@@ -44,11 +49,10 @@ struct HighScoreView: View {
                 Divider()
                     .background(.mint)
                     .padding(.horizontal, 30)
-
                 List(
                     highScoreViewModel.highScores.sorted(by: {
-                        $0.score > $1.score
-                    }).prefix(5)
+                        $0.score > $1.score         // ort decending
+                    }).prefix(5)                //showing only the highest five scores
                 ) { score in
                     HStack {
                         Text(score.playerName)
@@ -71,6 +75,7 @@ struct HighScoreView: View {
 
             Spacer()
 
+            // Button to go back to the Homeview
         NavigationLink(
             destination: ContentView(),
             label: {

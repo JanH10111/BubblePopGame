@@ -4,6 +4,8 @@
 //
 //  Created by Jan Huecking on 7/4/2025.
 //
+// Model representing a single bubble in the game, including position, speed, color, score value, and pop state.
+
 import Foundation
 import SwiftUI
 
