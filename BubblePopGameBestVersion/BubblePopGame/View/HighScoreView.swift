@@ -14,6 +14,8 @@ struct HighScoreView: View {
     @StateObject var highScoreViewModel = HighScoreViewModel()
     var score: Int
     var playerName: String
+    @Environment(\.verticalSizeClass) var verticalSizeClass // Tells whether there is enough vertical space to display the heading
+
 
     var body: some View {
         VStack(spacing: 20) {
@@ -25,55 +27,88 @@ struct HighScoreView: View {
                 .padding(.top, 30)
                 //onAppear the highscores are loaded from the userdefaults and if applicable the new playerscore is added
                 .onAppear {
-                    highScoreViewModel.loadHighScores()
-                    highScoreViewModel.savePlayerScore(
-                        playerName: playerName, score: score)
+                    withAnimation(.easeIn(duration: 0.4)) {
+                        highScoreViewModel.loadHighScores()
+                        highScoreViewModel.savePlayerScore(
+                            playerName: playerName, score: score)
+                    }
                 }
-            Spacer()
+            //Spacer if enough space
+            if verticalSizeClass != .compact {Spacer()}
             
             //Highscore Board
-            VStack(spacing: 15) {
-                HStack {
-                    Text("Name")
-                        .font(.headline)
-                        .fontWeight(.bold)
-                        .foregroundStyle(.mint)
-                    Spacer()
-                    Text("Score")
-                        .font(.headline)
-                        .fontWeight(.bold)
-                        .foregroundStyle(.mint)
-                }
-                .padding(.horizontal, 50)
+            // If the device hasn't enough vertical space the table is display as a scrollview
+            if verticalSizeClass == .compact {
+                                ScrollView {
+                                    VStack() {
+                                        ForEach(
+                                            highScoreViewModel.highScores.sorted(by: { $0.score > $1.score }).prefix(5)
+                                        ) { score in
+                                            HStack {
+                                                Text(score.playerName)
+                                                    .font(.body)
+                                                    .fontWeight(.medium)
 
-                Divider()
-                    .background(.mint)
-                    .padding(.horizontal, 30)
-                List(
-                    highScoreViewModel.highScores.sorted(by: {
-                        $0.score > $1.score         // ort decending
-                    }).prefix(5)                //showing only the highest five scores
-                ) { score in
+                                                Spacer()
+
+                                                Text("\(score.score)")
+                                                    .font(.body)
+                                                    .fontWeight(.medium)
+                                            }
+                                            .padding(.horizontal, 100)
+                                            .padding(.vertical, 15)
+                                            .background(Color(.systemGray6))
+                                            .cornerRadius(10)
+                                        }
+                                    }
+                                    .padding(.horizontal, 20)
+                                }
+                                .frame(height: 200)
+            } else {
+                VStack(spacing: 15) {
                     HStack {
-                        Text(score.playerName)
-                            .font(.body)
-                            .fontWeight(.medium)
-
+                        Text("Name")
+                            .font(.headline)
+                            .fontWeight(.bold)
+                            .foregroundStyle(.mint)
                         Spacer()
-
-                        Text("\(score.score)")
-                            .font(.body)
-                            .fontWeight(.medium)
+                        Text("Score")
+                            .font(.headline)
+                            .fontWeight(.bold)
+                            .foregroundStyle(.mint)
                     }
-                    .padding(.vertical, 8)
-                    .padding(.horizontal, 38)
-
+                    .padding(.horizontal, 50)
+                    
+                    Divider()
+                        .background(.mint)
+                        .padding(.horizontal, 30)
+                    List(
+                        highScoreViewModel.highScores.sorted(by: {
+                            $0.score > $1.score         // ort decending
+                        }).prefix(5)                //showing only the highest five scores
+                    ) { score in
+                        HStack {
+                            Text(score.playerName)
+                                .font(.body)
+                                .fontWeight(.medium)
+                            
+                            Spacer()
+                            
+                            Text("\(score.score)")
+                                .font(.body)
+                                .fontWeight(.medium)
+                        }
+                        .padding(.vertical, 8)
+                        .padding(.horizontal, 38)
+                        
+                    }
+                    .listStyle(.plain)
+                    .frame(height: 300)
                 }
-                .listStyle(.plain)
-                .frame(height: 300)
             }
-
-            Spacer()
+            
+            //Spacer if enough space
+            if verticalSizeClass != .compact {Spacer()}
 
             // Button to go back to the Homeview
         NavigationLink(

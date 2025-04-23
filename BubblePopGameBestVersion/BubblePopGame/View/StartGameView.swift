@@ -48,7 +48,7 @@ struct StartGameView: View {
                     .opacity(0.7)
             )
             .cornerRadius(10)
-            
+
             // Displaying the time left, current score and current highscore at the top
             VStack {
                 HStack {
@@ -60,7 +60,7 @@ struct StartGameView: View {
                             .background(Color.black.opacity(0.4))
                             .foregroundColor(.white)
                             .cornerRadius(7)
-                        
+
                         Text("\(viewModel.countdownInSeconds)")
                             .font(.largeTitle)
                             .bold()
@@ -110,7 +110,7 @@ struct StartGameView: View {
                 }
                 .padding([.leading, .trailing], 30)
                 .padding(.top, 65)
-                
+
                 Spacer()
             }
 
@@ -150,6 +150,10 @@ struct StartGameView: View {
             Circle()
                 .fill(bubble.color)
                 .frame(width: 60, height: 60)
+                .overlay(  // Add border
+                    Circle()
+                        .stroke(Color.black, lineWidth: 0.5)
+                )
                 .position(bubble.position)
                 .scaleEffect(scale)
                 .opacity(bubble.isPopped ? 0 : 1)

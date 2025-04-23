@@ -14,9 +14,9 @@ enum BackgroundOption: String, CaseIterable, Identifiable {
     case sunset = "Sunset"
     case mountains = "Mountains"
     case coast = "Coast"
-    
+
     var id: String { rawValue }
-    
+
     var imageName: String {
         switch self {
         case .sunset:

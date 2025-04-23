@@ -17,4 +17,3 @@ struct BubbleData: Identifiable {
     var isPopped: Bool = false
     var value: Int
 }
-

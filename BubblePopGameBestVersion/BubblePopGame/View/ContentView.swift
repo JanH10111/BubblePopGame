@@ -11,23 +11,24 @@ import SwiftUI
 struct ContentView: View {
 
     @State private var imageVisible = false
+    @Environment(\.verticalSizeClass) var verticalSizeClass // Tells whether there is enough vertical space to display the heading
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 30) {
-
-                //Image of the game that fades in
-                Image("BubblepopImage")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(maxWidth: 300)
-                    .cornerRadius(25)
-                    .shadow(radius: 20)
-                    .padding(.top, 60)
-                    .opacity(imageVisible ? 1 : 0.1)
-                    .animation(.easeInOut(duration: 1.5), value: imageVisible)
-                    .onAppear { imageVisible = true }
-
+                if verticalSizeClass != .compact {
+                    //Image of the game that fades in
+                    Image("BubblepopImage")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxWidth: 300)
+                        .cornerRadius(25)
+                        .shadow(radius: 20)
+                        .padding(.top, 60)
+                        .opacity(imageVisible ? 1 : 0.1)
+                        .animation(.easeInOut(duration: 1.5), value: imageVisible)
+                        .onAppear { imageVisible = true }
+                }
                 Spacer()
 
                 Text("Welcome to Bubble Pop!")

@@ -12,7 +12,7 @@ struct BubblePopGameApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-            .statusBar(hidden: true)
+                .statusBar(hidden: true) // Hide status bar
         }
     }
 }

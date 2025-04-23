@@ -26,7 +26,6 @@ class HighScoreViewModel: ObservableObject {
         if(playerName != ""){
             let newHighscore = HighScores(playerName: playerName, score: score)
             highScores.append(newHighscore)
-            
             let encoder = JSONEncoder()
             if let encoded = try? encoder.encode(highScores){
                 UserDefaults.standard.set(encoded, forKey: "HighScores")

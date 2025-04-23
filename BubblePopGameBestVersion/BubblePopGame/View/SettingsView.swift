@@ -18,20 +18,24 @@ struct SettingsView: View {
     @State private var navigateToStartGame = false
     @State private var showNameAlert = false
     @State private var selectedBackground: BackgroundOption = .sunset
-    
+
+    @Environment(\.verticalSizeClass) var verticalSizeClass // Tells whether there is enough vertical space to display the heading
+
     var body: some View {
         VStack {
             // Heading of the view
-            HStack {
-                Image(systemName: "gearshape.fill")
-                    .foregroundStyle(.mint)
-                    .font(.system(size: 25))
-                Label("Settings", systemImage: "")
-                    .foregroundStyle(.mint)
-                    .font(.largeTitle.bold())
-            }.padding(.top)
+            if verticalSizeClass != .compact {
+                HStack {
+                    Image(systemName: "gearshape.fill")
+                        .foregroundStyle(.mint)
+                        .font(.system(size: 25))
+                    Label("Settings", systemImage: "")
+                        .foregroundStyle(.mint)
+                        .font(.largeTitle.bold())
+                }.padding(.top)
+            }
             Spacer()
-            
+
             // Textfield to provide the player's name
             VStack {
                 Text("Enter Your Name")
@@ -45,7 +49,7 @@ struct SettingsView: View {
             .foregroundStyle(.mint)
             .padding(.horizontal, 40)
             Spacer()
-            
+
             // Slider to select the game time
             VStack {
                 Text("Game Time: \(Int(countdownValue)) sec")
