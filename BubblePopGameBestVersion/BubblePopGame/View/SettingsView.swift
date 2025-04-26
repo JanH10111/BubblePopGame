@@ -66,7 +66,7 @@ struct SettingsView: View {
 
             // Slider to select the maximum number of bubbles displayed on the screen
             VStack {
-                Text("Max Number of Bubbles: \(Int(numberOfBubbles))")
+                Text("Maximum number of bubbles: \(Int(numberOfBubbles))")
                     .font(.headline)
                 Slider(value: $numberOfBubbles, in: 0...15, step: 1)
                     .tint(.gray)
@@ -77,7 +77,7 @@ struct SettingsView: View {
 
             // Picker to select the background for the game
             VStack {
-                Text("Select Background")
+                Text("Background")
                     .font(.headline)
                 Picker("Background", selection: $selectedBackground) {
                     ForEach(BackgroundOption.allCases) { option in
